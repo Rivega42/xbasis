@@ -1,43 +1,60 @@
-# Python
+# Dependencies
+node_modules/
 __pycache__/
 *.py[cod]
 *$py.class
 .Python
 venv/
-.venv/
 env/
-.env
+.venv/
 
-# Node
-node_modules/
+# Build
 .next/
 out/
+build/
+dist/
+*.egg-info/
+
+# Environment
+.env
+.env.local
+.env.*.local
+*.env
 
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Build
-dist/
-build/
-*.egg-info/
-
-# Local
-*.local
-.env.local
-.env.*.local
+*~
+.DS_Store
 
 # Logs
 *.log
 logs/
 
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
 # Database
 *.db
 *.sqlite
+*.sqlite3
+
+# Misc
+*.bak
+*.tmp
+.cache/
+tmp/
+temp/
+
+# Type stubs
+.mypy_cache/
+
+# Secrets
+*.pem
+*.key
+secrets/
