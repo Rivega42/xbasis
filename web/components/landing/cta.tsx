@@ -27,7 +27,7 @@ export function CTA() {
             </h2>
 
             <p className="mt-4 text-lg text-primary-foreground/80">
-              Join thousands of developers building and deploying with xBasis.
+              Join thousands of developers building and deploying with ShipKit.
               Start free, no credit card required.
             </p>
 

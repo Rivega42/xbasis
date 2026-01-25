@@ -72,7 +72,7 @@ export function Hero() {
                 <div className="h-3 w-3 rounded-full bg-green-500" />
               </div>
               <div className="flex-1 text-center">
-                <span className="text-xs text-muted-foreground">xbasis.app/dashboard</span>
+                <span className="text-xs text-muted-foreground">shipkit.app/dashboard</span>
               </div>
             </div>
             
