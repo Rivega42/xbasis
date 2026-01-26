@@ -1,107 +1,168 @@
-# Session 8: MVP Complete 🎉
+# Session 9: Production Ready
 
-**Дата:** 2026-01-25
-**Сессия №:** 8 (Final)
-**Паттерн:** Архитектор → Агенты (реальная приёмка)
+**Дата:** 2026-01-26
+**Сессия №:** 9
+**Паттерн:** Архитектор → Последовательная реализация
 
 ---
 
 ## 🎯 Цель сессии
 
-- [x] AI Streaming (SSE)
-- [x] Deploy Webhook (GitHub auto-deploy)
-- [x] CHANGELOG.md
-- [x] Финальная документация
-
----
-
-## 👥 Агенты сессии (Волна 1 — параллельно)
-
-| Роль | Задача | Проверено | Статус |
-|------|--------|-----------|--------|
-| Python Developer #1 | AI Streaming | stream_anthropic, chat/stream | ✅ Принято |
-| Python Developer #2 | Deploy Webhook | webhook/github, models | ✅ Принято |
-| Tech Writer | CHANGELOG.md | полный файл | ✅ Принято |
+- [x] Исправить PROB-003: Token refresh race condition (P1)
+- [x] Интеграция Sentry (monitoring)
+- [x] Email confirmation (Resend)
+- [x] Infrastructure: Docker + Traefik
+- [x] Paddle production интеграция
 
 ---
 
 ## ✅ Сделано
 
-### AI Streaming (Python Dev #1)
-- `stream_anthropic()` — streaming от Anthropic API
-- `stream_openai()` — streaming от OpenAI API  
-- `POST /ai/chat/stream` — SSE endpoint
-- StreamingResponse с правильными headers
+### 1. PROB-003: Token Refresh Race Condition (P1) — FIXED
 
-### Deploy Webhook (Python Dev #2)
-- `POST /deploy/webhook/github` — GitHub webhook handler
-- `verify_github_signature()` — проверка подписи
-- Фильтр по branch (main/master)
-- `Project.auto_deploy` поле
-- `Deployment.commit_message` поле
+**Файлы:**
+- `src/api/models/user.py` — добавлены `refresh_token_version`, `last_refresh_at`
+- `src/api/auth/router.py` — token rotation + database locking
 
-### CHANGELOG.md (Tech Writer)
-- Keep a Changelog формат
-- Все backend/frontend features
-- Infrastructure section
+**Механизм:**
+- Версия токена в JWT payload (`ver` claim)
+- При refresh: проверка версии → инкремент → новый токен
+- `SELECT ... FOR UPDATE` для предотвращения race condition
+- Logout инвалидирует все токены через инкремент версии
+
+**Тесты:** 11 passed (включая 4 новых для race condition)
 
 ---
 
-## 📊 Финальный статус
+### 2. Sentry Integration
+
+**Backend:**
+- `sentry-sdk[fastapi]` в requirements.txt
+- Инициализация в `main.py` с FastAPI + SQLAlchemy integrations
+- Конфигурация: `SENTRY_DSN`, `ENVIRONMENT`
+
+**Frontend:**
+- `@sentry/nextjs` в package.json
+- `sentry.client.config.ts`, `sentry.server.config.ts`
+- `app/global-error.tsx` — error boundary
+- Conditional loading (только если DSN задан)
+
+---
+
+### 3. Email Confirmation (Resend)
+
+**Файлы:**
+- `src/api/core/email.py` — email service
+- `src/api/models/user.py` — `verification_token`, `verification_expires`
+- `src/api/auth/router.py` — endpoints
+
+**Endpoints:**
+- `POST /auth/verify-email` — верификация
+- `POST /auth/resend-verification` — повторная отправка
+- Автоматическая отправка при регистрации
+
+**Конфигурация:**
+- `RESEND_API_KEY`
+- `EMAIL_FROM`
+- `APP_URL`
+
+---
+
+### 4. Docker Production Config
+
+**Файлы:**
+- `.deploy/Dockerfile` — backend (multi-stage)
+- `web/Dockerfile` — frontend (multi-stage)
+- `docker-compose.prod.yml` — production setup
+- `next.config.js` — добавлен `output: 'standalone'`
+
+**Фичи:**
+- Multi-stage builds
+- Non-root users
+- Health checks
+- Network isolation
+
+---
+
+### 5. Traefik + SSL
+
+**Включено в docker-compose.prod.yml:**
+- Traefik v2.10 reverse proxy
+- Let's Encrypt автоматические сертификаты
+- HTTP → HTTPS redirect
+- Labels для автоматического routing
+
+---
+
+### 6. Paddle Production Integration
+
+**Обновлено в `billing/router.py`:**
+- Webhook signature verification
+- Paddle API checkout creation
+- Все события: created, updated, canceled, ended
+- `POST /billing/cancel` endpoint
+- Price IDs в конфигурации
+
+---
+
+## 📊 Итоговый статус
 
 ```
 ████████████████████████████████████████ 100%
 
-   Auth:            ████████████████████ 100% ✅
-   Billing:         ████████████████████ 100% ✅
-   Dashboard:       ████████████████████ 100% ✅
-   Projects:        ████████████████████ 100% ✅
-   AI Gateway:      ████████████████████ 100% ✅
-   Deploy:          ████████████████████ 100% ✅
-   Landing:         ████████████████████ 100% ✅
-   Testing:         ████████████████████ 100% ✅
-   CI/CD:           ████████████████████ 100% ✅
-   Docker:          ████████████████████ 100% ✅
+   MVP v1:           ████████████████████ 100% ✅
+   MVP v2:           ████████████████████ 100% ✅
+
+   Problems:
+   ├── PROB-001: Resolved ✅
+   ├── PROB-002: Resolved ✅ (Email)
+   └── PROB-003: Resolved ✅ (Token race)
 ```
 
 ---
 
-## ⏱️ Итоговое время
+## 📁 Измененные файлы
 
-| Сессия | Задачи | Время |
-|--------|--------|-------|
-| Session 1-8 | MVP 100% | ~3 часа |
+```
+src/api/
+├── auth/router.py          # Token rotation, verify-email
+├── billing/router.py       # Paddle production
+├── core/
+│   ├── config.py           # New settings
+│   └── email.py            # NEW: Resend service
+├── models/user.py          # New fields
+└── main.py                 # Sentry init
+
+web/
+├── package.json            # @sentry/nextjs
+├── next.config.js          # Sentry + standalone
+├── sentry.client.config.ts # NEW
+├── sentry.server.config.ts # NEW
+├── app/global-error.tsx    # NEW
+└── Dockerfile              # NEW
+
+.deploy/
+└── Dockerfile              # NEW: backend
+
+docker-compose.prod.yml     # NEW: production
+requirements.txt            # sentry-sdk, resend
+
+tests/
+├── conftest.py             # Updated fixtures
+└── test_auth.py            # New token tests
+
+docs/
+├── PROBLEMS.md             # PROB-002, PROB-003 resolved
+├── FEATURES.md             # Infrastructure 100%
+└── SESSION.md              # This file
+```
 
 ---
 
-## 🎉 MVP COMPLETE!
+## 🚀 Следующие шаги
 
-### Что построено:
-
-**Backend (FastAPI):**
-- JWT Auth с refresh tokens
-- Projects CRUD
-- AI Gateway (Claude + GPT) со streaming
-- Billing (Paddle mock)
-- Deploy с GitHub webhooks
-
-**Frontend (Next.js 14):**
-- Landing page
-- Auth pages
-- Dashboard (7 страниц)
-- AI Chat interface
-- Dark mode
-
-**Infrastructure:**
-- 31 тест
-- CI/CD (GitHub Actions)
-- Docker
-
----
-
-## 🚀 TODO на следующую сессию
-
-1. [ ] Deploy to Railway — production environment
-2. [ ] Connect Paddle — реальные платежи
-3. [ ] Add monitoring — Sentry
-4. [ ] Email confirmation — Resend интеграция
+1. [ ] Deploy to Railway/VPS
+2. [ ] Configure production environment variables
+3. [ ] Set up Paddle products & prices
+4. [ ] Configure Resend domain verification
+5. [ ] Set up Sentry project

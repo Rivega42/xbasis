@@ -25,8 +25,8 @@
 | ID | Проблема | Статус | Приоритет |
 |----|----------|--------|-----------|
 | PROB-001 | Railway API mock в dev | 🟢 Resolved | P2 |
-| PROB-002 | Нет email confirmation | 🔴 Open | P2 |
-| PROB-003 | Token refresh race condition | 🟡 Investigating | P1 |
+| PROB-002 | Нет email confirmation | 🟢 Resolved | P2 |
+| PROB-003 | Token refresh race condition | 🟢 Resolved | P1 |
 
 ---
 
@@ -43,29 +43,35 @@
 
 ## PROB-002: Нет email confirmation
 
-**Статус:** 🔴 Open
+**Статус:** 🟢 Resolved
 **Приоритет:** P2
 
 **Симптомы:** Можно зарегистрироваться с любым email
 
-**Workaround:** Допустимо для MVP.
-
-**TODO:**
-- [ ] Интеграция с Resend
-- [ ] Endpoint /auth/verify-email
+**Решение (Session 9):**
+- [x] Интеграция с Resend API
+- [x] Добавлены поля `verification_token` и `verification_expires` в User
+- [x] POST /auth/verify-email — верификация email
+- [x] POST /auth/resend-verification — повторная отправка
+- [x] Автоматическая отправка письма при регистрации
+- [x] HTML шаблон письма
 
 ---
 
 ## PROB-003: Token refresh race condition
 
-**Статус:** 🟡 Investigating
+**Статус:** 🟢 Resolved
 **Приоритет:** P1
 
 **Симптомы:** При одновременных запросах с одним refresh token могут быть проблемы
 
-**Возможное решение:**
-- Token rotation
-- Redis blacklist
+**Решение (Session 9):**
+- Добавлен `refresh_token_version` в модель User
+- Версия токена включена в JWT payload (`ver` claim)
+- При refresh проверяется версия и инкрементируется
+- Database locking через `SELECT ... FOR UPDATE` (PostgreSQL)
+- Logout инвалидирует все токены через инкремент версии
+- Добавлены тесты для проверки race condition
 
 ---
 

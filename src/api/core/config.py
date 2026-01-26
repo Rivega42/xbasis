@@ -47,12 +47,23 @@ class Settings(BaseSettings):
     PADDLE_VENDOR_ID: str = ""
     PADDLE_API_KEY: str = ""
     PADDLE_WEBHOOK_SECRET: str = ""
+    PADDLE_PRO_PRICE_ID: str = ""
+    PADDLE_TEAM_PRICE_ID: str = ""
     
     # Plans
     PLAN_FREE_TOKENS: int = 10000
     PLAN_PRO_TOKENS: int = 100000
     PLAN_TEAM_TOKENS: int = 500000
-    
+
+    # Monitoring
+    SENTRY_DSN: str = ""
+    ENVIRONMENT: str = "development"
+
+    # Email (Resend)
+    RESEND_API_KEY: str = ""
+    EMAIL_FROM: str = "xBasis <noreply@xbasis.app>"
+    APP_URL: str = "http://localhost:3000"
+
     class Config:
         env_file = ".env"
         case_sensitive = True

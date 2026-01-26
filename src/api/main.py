@@ -8,6 +8,24 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .core.config import settings
+
+# Sentry initialization (if DSN is configured)
+if settings.SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.fastapi import FastApiIntegration
+    from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+
+    sentry_sdk.init(
+        dsn=settings.SENTRY_DSN,
+        environment=settings.ENVIRONMENT,
+        traces_sample_rate=0.1 if settings.ENVIRONMENT == "production" else 1.0,
+        profiles_sample_rate=0.1 if settings.ENVIRONMENT == "production" else 1.0,
+        integrations=[
+            FastApiIntegration(transaction_style="endpoint"),
+            SqlalchemyIntegration(),
+        ],
+        send_default_pii=False,
+    )
 from .core.database import init_db
 from .auth.router import router as auth_router
 from .projects.router import router as projects_router
