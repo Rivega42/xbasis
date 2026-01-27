@@ -23,16 +23,42 @@ CHANGELOG.md         # История версий
 
 ---
 
-## 🤖 Agents & Skills
+## 🤖 Агенты (вызываются автоматически)
 
-### Доступные агенты
-| Агент | Когда использовать |
-|-------|-------------------|
-| `@backend` | API, FastAPI, база данных, бизнес-логика |
-| `@frontend` | Next.js, компоненты, UI, стили |
-| `@reviewer` | Code review перед коммитом |
+| Агент | Специализация | Триггеры |
+|-------|---------------|----------|
+| **orchestrator** | Координация | Всегда активен |
+| **backend** | FastAPI, Python, API | endpoint, model, route, service |
+| **frontend** | Next.js, React, UI | component, page, UI, кнопка, форма |
+| **database** | SQLAlchemy, миграции | migration, schema, table, column |
+| **ai** | AI Gateway, промпты | Claude, tokens, generation, prompt |
+| **devops** | Docker, CI/CD, деплой | deploy, Docker, Railway, CI |
+| **qa** | Тесты, покрытие | test, pytest, coverage, edge case |
+| **docs** | Документация | README, documentation, guide |
+| **reviewer** | Code review | review, commit, check, PR |
 
-### Подключённые skills
+### Как это работает
+
+```
+Ты: "Добавь endpoint для списка проектов"
+         │
+         ▼
+    orchestrator анализирует
+         │
+         ▼
+    @backend создаёт endpoint
+         │
+         ▼
+    orchestrator собирает результат
+         │
+         ▼
+Тебе: "Готово. Создан GET /api/projects..."
+```
+
+---
+
+## 📝 Подключённые Skills
+
 @.claude/skills/xbasis-patterns/SKILL.md
 @.claude/skills/shipkit-workflow/SKILL.md
 
@@ -44,8 +70,8 @@ CHANGELOG.md         # История версий
 xbasis/
 ├── CLAUDE.md              ← ТЫ ЗДЕСЬ
 ├── .claude/
-│   ├── settings.json      # Hooks (auto-format, validation)
-│   ├── agents/            # Специализированные агенты
+│   ├── settings.json      # Hooks (автоформат, валидация)
+│   ├── agents/            # 9 специализированных агентов
 │   └── skills/            # Переиспользуемые знания
 ├── docs/                  # ShipKit документация
 ├── src/api/               # FastAPI backend
@@ -67,57 +93,22 @@ open http://localhost:8000/docs  # API Docs
 
 ### Frontend
 ```bash
-cd web
-npm run dev      # Development
-npm run build    # Build
-npm run lint     # Lint
+cd web && npm run dev         # Development
+cd web && npm run build       # Build
+```
+
+### Database
+```bash
+alembic upgrade head          # Применить миграции
+alembic revision --autogenerate -m "description"  # Новая миграция
 ```
 
 ### Git
 ```bash
-# Commit conventions
 git commit -m "feat: new feature"
 git commit -m "fix: bug fix"
 git commit -m "docs: documentation"
-git commit -m "refactor: code refactoring"
 ```
-
----
-
-## 🎨 Конвенции
-
-### Python (Backend)
-- **Formatter:** Black + Ruff
-- **Types:** Полная типизация (Pydantic)
-- **Style:** async/await везде, snake_case
-
-### TypeScript (Frontend)
-- **Formatter:** Prettier + ESLint
-- **Components:** shadcn/ui + Tailwind
-- **Style:** PascalCase компоненты, camelCase функции
-
----
-
-## 🎭 Режим Архитектор → Агенты
-
-```
-┌──────────────────────────────────────────────────────────┐
-│                      АРХИТЕКТОР                           │
-│  1. Анализ задачи                                        │
-│  2. Выбор агентов (@backend, @frontend, @reviewer)       │
-│  3. Распределение работы                                 │
-│  4. Приёмка результатов                                  │
-└─────────────────────────────┬────────────────────────────┘
-                              │
-        ┌─────────────────────┼─────────────────────┐
-        ▼                     ▼                     ▼
-   @backend              @frontend              @reviewer
-   (API, DB)             (UI, styles)           (quality)
-```
-
-### Правила
-- ✅ Можно параллельно: Backend + Frontend (разные файлы)
-- ❌ Нельзя: Frontend зависит от нового API → сначала backend
 
 ---
 
@@ -133,9 +124,9 @@ git commit -m "refactor: code refactoring"
 
 ---
 
-## 🚫 Не делай
+## 🚧 Не делай
 
 - Не начинай кодить без плана
 - Не меняй стек без записи в DECISIONS.md
 - Не заканчивай сессию без обновления SESSION.md
-- Не пропускай code review для важных изменений
+- Не пропускай @reviewer для важных изменений
