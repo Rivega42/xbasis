@@ -1,0 +1,40 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'Validating code changes...'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [[ \"$CLAUDE_FILE_PATH\" == *.py ]]; then black --check \"$CLAUDE_FILE_PATH\" 2>/dev/null || black \"$CLAUDE_FILE_PATH\"; ruff check --fix \"$CLAUDE_FILE_PATH\" 2>/dev/null; fi"
+          },
+          {
+            "type": "command",
+            "command": "if [[ \"$CLAUDE_FILE_PATH\" == *.ts ]] || [[ \"$CLAUDE_FILE_PATH\" == *.tsx ]]; then cd web && npx prettier --write \"../$CLAUDE_FILE_PATH\" 2>/dev/null; npx eslint --fix \"../$CLAUDE_FILE_PATH\" 2>/dev/null; fi"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Before finishing, verify: 1) docs/SESSION.md updated if significant work done, 2) docs/DECISIONS.md updated if architectural decisions made, 3) docs/FEATURES.md status updated if features completed. Return: APPROVED or list missing updates."
+          }
+        ]
+      }
+    ]
+  }
+}
